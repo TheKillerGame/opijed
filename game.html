@@ -3,97 +3,116 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>OPIJED.EXE</title>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<title>opijed game!!!!</title>
 <style>
-html,body{margin:0;height:100%;background:#2b0b3a;overflow:hidden;touch-action:none}
-body{display:flex;align-items:center;justify-content:center}
-canvas{image-rendering:pixelated;image-rendering:crisp-edges;width:min(96vw,calc(96vh*160/144));height:auto;border:6px solid #ff2fd0;box-shadow:0 0 0 6px #39ff14}
-.scan{position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(transparent 0 2px,rgba(0,0,0,.25) 2px 4px)}
+html,body{margin:0;background:#7fff00;font-family:"Times New Roman",serif;touch-action:none;overflow:hidden}
+body{display:flex;flex-direction:column;align-items:center}
+marquee{background:#ff00ff;color:#ffff00;font:bold 18px "Comic Sans MS",cursive;width:100%;padding:3px 0}
+canvas{display:block;height:calc(100vh - 70px);max-width:98vw;aspect-ratio:2/3;border:5px ridge #ff0000;background:#fff}
+.count{font:13px "Times New Roman";color:#0000ee;text-decoration:underline;margin-top:2px}
 </style>
 </head>
 <body>
+<marquee scrollamount="7">!!! WELCOME TO OPIJED GAME !!! catch the chatgpt answers so opijed can paste them !!! dont let him read !!! best viewed in internet explorer 6 !!!</marquee>
 <canvas id="c"></canvas>
-<div class="scan"></div>
+<div class="count">you are visitor number 000004</div>
 <script>
-const W=160,H=144,c=document.getElementById('c'),g=c.getContext('2d');
-c.width=W;c.height=H;g.imageSmoothingEnabled=false;
-const R=(x,y,w,h,col)=>{g.fillStyle=col;g.fillRect(x|0,y|0,w,h)};
-const T=(s,x,y,col='#fff',sz=8,al='center')=>{g.font=sz+'px "Press Start 2P"';g.textAlign=al;g.fillStyle='#000';g.fillText(s,x+1,y+1);g.fillStyle=col;g.fillText(s,x,y)};
+const W=400,H=600,c=document.getElementById('c'),g=c.getContext('2d');
+c.width=W;c.height=H;
 const pick=a=>a[Math.floor(Math.random()*a.length)];
-const POPS=['OPTION 1','OPTION 2','OPTION 3','PASTED','SO U ARE OPIJED','ctrl+v','island'];
+let boil=0,t=0;
+const jit=(i)=>{const s=Math.sin(i*127.1+boil*311.7)*43758.5;return (s-Math.floor(s))*2-1};
+function sline(pts,col,w=3,fill){g.beginPath();pts.forEach(([x,y],i)=>{const X=x+jit(i+x)*2.5,Y=y+jit(i+y+5)*2.5;i?g.lineTo(X,Y):g.moveTo(X,Y)});if(fill){g.closePath();g.fillStyle=fill;g.fill()}g.strokeStyle=col;g.lineWidth=w;g.lineCap=g.lineJoin='round';g.stroke()}
+function scirc(x,y,r,col,fill,w=3){const p=[];for(let i=0;i<=14;i++){const a=i/14*Math.PI*2;p.push([x+Math.cos(a)*r,y+Math.sin(a)*r*.95])}sline(p,col,w,fill)}
+function srect(x,y,w,h,col,fill){sline([[x,y],[x+w,y],[x+w,y+h],[x,y+h],[x,y]],col,3,fill)}
+function txt(s,x,y,col,sz=20,font='"Comic Sans MS",cursive',rot=0){g.save();g.translate(x,y);g.rotate(rot);g.font='bold '+sz+'px '+font;g.textAlign='center';g.fillStyle=col;g.fillText(s,0,0);g.restore()}
+function rainbow(s,x,y,sz){g.font='bold '+sz+'px "Comic Sans MS",cursive';const cols=['#f00','#f80','#ee0','#0c0','#00f','#a0f'];let w=g.measureText(s).width,cx=x-w/2;g.textAlign='left';[...s].forEach((ch,i)=>{g.fillStyle=cols[(i+(t>>3))%6];g.fillText(ch,cx,y+Math.sin(i+t/6)*4);cx+=g.measureText(ch).width})}
+
+const SAY=['island','can you hear me','go on','dude','dude','stop','ai doesnt have ammo','pls stop ss','im going to play pubg','if i cant read how tf am i supfreferpsghu'];
+const PASTE=['PASTED!!','So you are Opijed','Option 1','Option 2','Option 3','ctrl+v ctrl+v','"Attacking the AI Usage"'];
 const SMASH=['supfreferpsghu','writertertggrrrr','asdhjkfgsdf','hgjfkdlsghh'];
-let state='title',px=72,tx=72,items=[],pops=[],score=0,lives=3,t=0,spawn=0,best=0,smash='',shake=0;
-try{best=+localStorage.getItem('opbest')||0}catch(e){}
+let state='title',px=200,tx=200,items=[],pops=[],score=0,lives=3,spawn=0,best=0,say='',sayT=0,end='';
+try{best=+localStorage.getItem('opbest2')||0}catch(e){}
 const keys={};
 addEventListener('keydown',e=>{keys[e.key]=1;if(e.key==' '||e.key=='Enter')tap()});
 addEventListener('keyup',e=>keys[e.key]=0);
-function toX(e){const r=c.getBoundingClientRect();return (e.clientX-r.left)/r.width*W}
-c.addEventListener('pointerdown',e=>{tx=toX(e)-8;tap()});
-c.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType=='mouse')tx=toX(e)-8});
-function tap(){if(state!='play'){state='play';items=[];pops=[];score=0;lives=3;spawn=0;t=0;px=tx=72}}
-function island(x,y){
- // sand
- R(x-2,y+10,20,4,'#ffcc33');R(x,y+8,16,2,'#ffe066');
- // trunk
- R(x+7,y-2,2,10,'#a0522d');R(x+8,y-6,2,4,'#a0522d');
- // leaves
- R(x+2,y-8,14,2,'#39ff14');R(x,y-6,4,2,'#39ff14');R(x+14,y-6,4,2,'#39ff14');R(x+6,y-10,6,2,'#2bd10f');
- // face on the sand
- R(x+4,y+10,2,2,'#000');R(x+10,y+10,2,2,'#000');R(x+5,y+13,6,1,'#b5179e');
+const toX=e=>{const r=c.getBoundingClientRect();return (e.clientX-r.left)/r.width*W};
+c.addEventListener('pointerdown',e=>{tx=toX(e);tap()});
+c.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType=='mouse')tx=toX(e)});
+function tap(){if(state!='play'){state='play';items=[];pops=[];score=0;lives=3;spawn=0;px=tx=200;say='go on';sayT=80}}
+
+function bgDraw(){
+ const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#00ffff');gr.addColorStop(.7,'#ffff66');g.fillStyle=gr;g.fillRect(0,0,W,H);
+ scirc(340,60,32,'#ff6600','#ffcc00');sline([[318,56],[338,56]],'#000',6);sline([[344,56],[364,56]],'#000',6);sline([[338,56],[344,56]],'#000',2);txt('sun',340,110,'#ff6600',14);
+ scirc(80,70,22,'#999','#fff');scirc(105,64,26,'#999','#fff');scirc(130,72,20,'#999','#fff');
+ for(let k=0;k<3;k++){const p=[];for(let x=-10;x<=W+10;x+=25)p.push([x,520+k*28+Math.sin(x/30+t/20+k)*6]);p.push([W+10,H],[-10,H]);sline(p,'#0000aa',3,k%2?'#3366ff':'#0044dd')}
 }
-function clip(x,y){R(x,y,10,12,'#fff');R(x+3,y-1,4,3,'#888');R(x+2,y+4,6,1,'#5ac8fa');R(x+2,y+6,6,1,'#5ac8fa');R(x+2,y+8,4,1,'#5ac8fa');T('AI',x+5,y+11,'#ff2fd0',4)}
-function book(x,y){R(x,y,11,12,'#e63946');R(x+9,y+1,2,10,'#fff');R(x+2,y+3,5,1,'#ffcc33');T('READ',x+5,y+9,'#fff',3)}
-function bg(){
- for(let yy=0;yy<H;yy+=8)for(let xx=0;xx<W;xx+=8)R(xx,yy,8,8,((xx+yy+(t>>2))>>3)%2?'#3d0f54':'#4a1466');
- for(let xx=0;xx<W;xx+=4)R(xx,124+Math.round(Math.sin(xx/8+t/10)*2),4,24,(xx>>2)%2?'#00b4d8':'#0096c7');
+function opijed(x,y){
+ sline([[x-60,y+40],[x-40,y+20],[x+40,y+18],[x+62,y+42]],'#996600',3,'#ffdd55');
+ sline([[x+30,y+22],[x+34,y-40],[x+40,y-80]],'#663300',6);
+ sline([[x+40,y-80],[x+10,y-70]],'#008800',5);sline([[x+40,y-80],[x+70,y-68]],'#008800',5);sline([[x+40,y-80],[x+42,y-105]],'#008800',5);sline([[x+40,y-80],[x+15,y-95]],'#008800',5);
+ scirc(x-10,y-58,18,'#000','#ffe0bd');
+ g.fillStyle='#000';g.fillRect(x-18+jit(1)*2,y-64,4,5);g.fillRect(x-3+jit(2)*2,y-66,5,4);
+ sline([[x-20,y-50],[x-10,y-46],[x+2,y-52]],'#c00',3);
+ sline([[x-10,y-40],[x-12,y+5]],'#000',4);
+ sline([[x-12,y+5],[x-25,y+28]],'#000',4);sline([[x-12,y+5],[x+2,y+28]],'#000',4);
+ sline([[x-11,y-28],[x+12,y-20]],'#000',4);sline([[x-11,y-28],[x-32,y-14]],'#000',4);
+ srect(x+10,y-34,16,26,'#000','#10a37f');txt('gpt',x+18,y-17,'#fff',9,'Arial');
+ txt('opijed',x-10,y-86,'#ff0000',18,'"Comic Sans MS",cursive',jit(9)*.08);
 }
+function aiCard(it){srect(it.x-34,it.y-18,68,36,'#000','#10a37f');txt(it.label,it.x,it.y+5,'#fff',13,'Arial')}
+function book(it){srect(it.x-22,it.y-16,44,32,'#000','#cc0000');txt('BOOK',it.x,it.y+5,'#fff',14,'"Times New Roman"')}
+function cam(it){srect(it.x-24,it.y-14,48,30,'#000','#888');scirc(it.x,it.y+1,10,'#000','#222');srect(it.x-14,it.y-20,12,6,'#000','#555');txt('SS',it.x+16,it.y-18,'#f00',12,'Arial')}
+
 function loop(){
- t++;
- g.save();if(shake>0){g.translate((Math.random()*4-2)|0,(Math.random()*4-2)|0);shake--}
- bg();
+ t++;if(t%7==0)boil++;
+ bgDraw();
  if(state=='title'){
-  T('OPIJED.EXE',80,26,'#ffcc33',12);
-  T('catch the AI answers',80,46,'#fff',6);
-  T('so he can paste them',80,56,'#fff',6);
-  T('DONT catch books',80,72,'#ff5c7a',6);
-  T('he cant read',80,82,'#ff5c7a',6);
-  island(72,100);
-  if((t>>4)%2)T('TAP TO START',80,140,'#39ff14',6);
+  rainbow('OPIJED GAME',200,150,40);
+  txt('catch the chatgpt answers',200,200,'#0000ee',18);
+  txt('so opijed can paste them',200,224,'#0000ee',18);
+  txt('dont let him read books',200,262,'#cc0000',17,'"Times New Roman"',-.05);
+  txt('dont let him get screenshotted',200,286,'#cc0000',17,'"Times New Roman"',.04);
+  opijed(200,420);
+  if((t>>5)%2)txt('CLICK HERE TO START!!!',200,500,'#ff00ff',22,'Impact');
  }else if(state=='play'){
-  if(keys.ArrowLeft||keys.a)tx-=2.6;if(keys.ArrowRight||keys.d)tx+=2.6;
-  tx=Math.max(0,Math.min(W-16,tx));px+=(tx-px)*.35;
-  spawn--;
-  if(spawn<=0){const bad=score>3&&Math.random()<.28;items.push({x:4+Math.random()*(W-18),y:-14,bad,vy:.7+Math.min(score,40)*.03+Math.random()*.3});spawn=Math.max(18,55-score*1.2)}
+  if(keys.ArrowLeft||keys.a)tx-=6;if(keys.ArrowRight||keys.d)tx+=6;
+  tx=Math.max(40,Math.min(W-40,tx));px+=(tx-px)*.3;
+  if(--spawn<=0){
+   const r=Math.random();const type=score<3?'ai':r<.62?'ai':r<.82?'book':'ss';
+   items.push({x:40+Math.random()*(W-80),y:-30,type,label:'Option '+(1+Math.floor(Math.random()*3)),vy:2+Math.min(score,40)*.09+Math.random()});
+   spawn=Math.max(28,70-score*1.5);
+  }
   for(const it of items){
    it.y+=it.vy;
-   if(it.y>96&&it.y<116&&it.x+10>px&&it.x<px+16){
+   if(it.y>370&&it.y<420&&Math.abs(it.x-px)<46){
     it.dead=1;
-    if(it.bad){lives--;shake=10;pops.push({x:px+8,y:96,s:'HE TRIED TO READ',c:'#ff5c7a',l:50})}
-    else{score++;pops.push({x:px+8,y:96,s:pick(POPS),c:'#39ff14',l:40})}
-   }else if(it.y>H){it.dead=1;if(!it.bad){lives--;shake=10;pops.push({x:it.x+5,y:118,s:pick(SMASH),c:'#ff5c7a',l:50})}}
+    if(it.type=='ai'){score++;pops.push({x:px,y:360,s:pick(PASTE),c:'#008800',l:50})}
+    else{lives--;pops.push({x:px,y:360,s:it.type=='book'?'he tried to read 😭':'PLS STOP SS',c:'#cc0000',l:60});say=it.type=='book'?'dude':'pls stop ss';sayT=70}
+   }else if(it.y>H+20){it.dead=1;if(it.type=='ai'){lives--;pops.push({x:it.x,y:500,s:pick(SMASH),c:'#cc0000',l:60});say='can you hear me';sayT=70}}
   }
   items=items.filter(i=>!i.dead);
-  for(const it of items)it.bad?book(it.x,it.y):clip(it.x,it.y);
-  island(px,104);
-  for(const p of pops){p.y-=.4;p.l--;T(p.s,p.x,p.y,p.c,5)}
+  for(const it of items)(it.type=='ai'?aiCard:it.type=='book'?book:cam)(it);
+  opijed(px,440);
+  if(--sayT<=0&&Math.random()<.01){say=pick(SAY);sayT=110}
+  if(sayT>0){g.font='bold 15px "Comic Sans MS"';const w=g.measureText(say).width+20,bx=Math.max(w/2+4,Math.min(W-w/2-4,px-10));srect(bx-w/2,300,w,30,'#000','#fff');sline([[bx-6,330],[px-10,354],[bx+8,330]],'#000',3,'#fff');txt(say,bx,321,'#000',15)}
+  for(const p of pops){p.y-=1;p.l--;txt(p.s,p.x,p.y,p.c,18,'"Comic Sans MS"',jit(p.l)*.1)}
   pops=pops.filter(p=>p.l>0);
-  T('PASTED '+score,4,10,'#ffcc33',6,'left');
-  for(let i=0;i<3;i++)R(W-30+i*9,4,7,7,i<lives?'#ff2fd0':'#222');
-  if(lives<=0){state='over';smash=pick(SMASH);if(score>best){best=score;try{localStorage.setItem('opbest',best)}catch(e){}}}
+  txt('answers pasted: '+score,110,32,'#000',18,'"Times New Roman"');
+  txt('lives: '+'❤'.repeat(Math.max(0,lives)),320,32,'#f00',18,'Arial');
+  if(lives<=0){state='over';end=pick(['opijed had to type by himself','opijed went to play pubg instead','chatgpt is at capacity','opijed is an island now']);if(score>best){best=score;try{localStorage.setItem('opbest2',best)}catch(e){}}}
  }else{
-  R(10,20,140,104,'#000');R(12,22,136,100,'#1a0526');
-  T('GAME OVER',80,40,'#ff5c7a',10);
-  T('he had to type alone:',80,58,'#fff',5);
-  T(smash,80,72,'#39ff14',6);
-  T('PASTED '+score,80,92,'#ffcc33',7);
-  T('BEST '+best,80,104,'#ffcc33',6);
-  if((t>>4)%2)T('TAP TO RETRY',80,118,'#fff',6);
+  srect(30,130,340,330,'#000','#c0c0c0');srect(30,130,340,28,'#000','#000080');txt('opijed.exe has stopped working',196,150,'#fff',14,'Arial');
+  txt('GAME OVER',200,220,'#ff0000',44,'Impact');
+  txt(end,200,264,'#000',16,'"Comic Sans MS"');
+  txt('he typed: '+SMASH[(t>>4)%4],200,300,'#cc0000',16,'"Comic Sans MS"');
+  txt('answers pasted: '+score,200,345,'#000080',22,'"Times New Roman"');
+  txt('best: '+best,200,375,'#000080',18,'"Times New Roman"');
+  srect(140,405,120,34,'#000','#e0e0e0');txt('ok',200,428,'#000',18,'Arial');
  }
- g.restore();
  requestAnimationFrame(loop);
 }
-document.fonts.load('8px "Press Start 2P"').finally(loop);
+loop();
 </script>
 </body>
 </html>
