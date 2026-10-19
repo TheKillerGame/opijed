@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>OPIJED.EXE</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;height:100%;background:#2b0b3a;overflow:hidden;touch-action:none}
+body{display:flex;align-items:center;justify-content:center}
+canvas{image-rendering:pixelated;image-rendering:crisp-edges;width:min(96vw,calc(96vh*160/144));height:auto;border:6px solid #ff2fd0;box-shadow:0 0 0 6px #39ff14}
+.scan{position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(transparent 0 2px,rgba(0,0,0,.25) 2px 4px)}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="scan"></div>
+<script>
+const W=160,H=144,c=document.getElementById('c'),g=c.getContext('2d');
+c.width=W;c.height=H;g.imageSmoothingEnabled=false;
+const R=(x,y,w,h,col)=>{g.fillStyle=col;g.fillRect(x|0,y|0,w,h)};
+const T=(s,x,y,col='#fff',sz=8,al='center')=>{g.font=sz+'px "Press Start 2P"';g.textAlign=al;g.fillStyle='#000';g.fillText(s,x+1,y+1);g.fillStyle=col;g.fillText(s,x,y)};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const POPS=['OPTION 1','OPTION 2','OPTION 3','PASTED','SO U ARE OPIJED','ctrl+v','island'];
+const SMASH=['supfreferpsghu','writertertggrrrr','asdhjkfgsdf','hgjfkdlsghh'];
+let state='title',px=72,tx=72,items=[],pops=[],score=0,lives=3,t=0,spawn=0,best=0,smash='',shake=0;
+try{best=+localStorage.getItem('opbest')||0}catch(e){}
+const keys={};
+addEventListener('keydown',e=>{keys[e.key]=1;if(e.key==' '||e.key=='Enter')tap()});
+addEventListener('keyup',e=>keys[e.key]=0);
+function toX(e){const r=c.getBoundingClientRect();return (e.clientX-r.left)/r.width*W}
+c.addEventListener('pointerdown',e=>{tx=toX(e)-8;tap()});
+c.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType=='mouse')tx=toX(e)-8});
+function tap(){if(state!='play'){state='play';items=[];pops=[];score=0;lives=3;spawn=0;t=0;px=tx=72}}
+function island(x,y){
+ // sand
+ R(x-2,y+10,20,4,'#ffcc33');R(x,y+8,16,2,'#ffe066');
+ // trunk
+ R(x+7,y-2,2,10,'#a0522d');R(x+8,y-6,2,4,'#a0522d');
+ // leaves
+ R(x+2,y-8,14,2,'#39ff14');R(x,y-6,4,2,'#39ff14');R(x+14,y-6,4,2,'#39ff14');R(x+6,y-10,6,2,'#2bd10f');
+ // face on the sand
+ R(x+4,y+10,2,2,'#000');R(x+10,y+10,2,2,'#000');R(x+5,y+13,6,1,'#b5179e');
+}
+function clip(x,y){R(x,y,10,12,'#fff');R(x+3,y-1,4,3,'#888');R(x+2,y+4,6,1,'#5ac8fa');R(x+2,y+6,6,1,'#5ac8fa');R(x+2,y+8,4,1,'#5ac8fa');T('AI',x+5,y+11,'#ff2fd0',4)}
+function book(x,y){R(x,y,11,12,'#e63946');R(x+9,y+1,2,10,'#fff');R(x+2,y+3,5,1,'#ffcc33');T('READ',x+5,y+9,'#fff',3)}
+function bg(){
+ for(let yy=0;yy<H;yy+=8)for(let xx=0;xx<W;xx+=8)R(xx,yy,8,8,((xx+yy+(t>>2))>>3)%2?'#3d0f54':'#4a1466');
+ for(let xx=0;xx<W;xx+=4)R(xx,124+Math.round(Math.sin(xx/8+t/10)*2),4,24,(xx>>2)%2?'#00b4d8':'#0096c7');
+}
+function loop(){
+ t++;
+ g.save();if(shake>0){g.translate((Math.random()*4-2)|0,(Math.random()*4-2)|0);shake--}
+ bg();
+ if(state=='title'){
+  T('OPIJED.EXE',80,26,'#ffcc33',12);
+  T('catch the AI answers',80,46,'#fff',6);
+  T('so he can paste them',80,56,'#fff',6);
+  T('DONT catch books',80,72,'#ff5c7a',6);
+  T('he cant read',80,82,'#ff5c7a',6);
+  island(72,100);
+  if((t>>4)%2)T('TAP TO START',80,140,'#39ff14',6);
+ }else if(state=='play'){
+  if(keys.ArrowLeft||keys.a)tx-=2.6;if(keys.ArrowRight||keys.d)tx+=2.6;
+  tx=Math.max(0,Math.min(W-16,tx));px+=(tx-px)*.35;
+  spawn--;
+  if(spawn<=0){const bad=score>3&&Math.random()<.28;items.push({x:4+Math.random()*(W-18),y:-14,bad,vy:.7+Math.min(score,40)*.03+Math.random()*.3});spawn=Math.max(18,55-score*1.2)}
+  for(const it of items){
+   it.y+=it.vy;
+   if(it.y>96&&it.y<116&&it.x+10>px&&it.x<px+16){
+    it.dead=1;
+    if(it.bad){lives--;shake=10;pops.push({x:px+8,y:96,s:'HE TRIED TO READ',c:'#ff5c7a',l:50})}
+    else{score++;pops.push({x:px+8,y:96,s:pick(POPS),c:'#39ff14',l:40})}
+   }else if(it.y>H){it.dead=1;if(!it.bad){lives--;shake=10;pops.push({x:it.x+5,y:118,s:pick(SMASH),c:'#ff5c7a',l:50})}}
+  }
+  items=items.filter(i=>!i.dead);
+  for(const it of items)it.bad?book(it.x,it.y):clip(it.x,it.y);
+  island(px,104);
+  for(const p of pops){p.y-=.4;p.l--;T(p.s,p.x,p.y,p.c,5)}
+  pops=pops.filter(p=>p.l>0);
+  T('PASTED '+score,4,10,'#ffcc33',6,'left');
+  for(let i=0;i<3;i++)R(W-30+i*9,4,7,7,i<lives?'#ff2fd0':'#222');
+  if(lives<=0){state='over';smash=pick(SMASH);if(score>best){best=score;try{localStorage.setItem('opbest',best)}catch(e){}}}
+ }else{
+  R(10,20,140,104,'#000');R(12,22,136,100,'#1a0526');
+  T('GAME OVER',80,40,'#ff5c7a',10);
+  T('he had to type alone:',80,58,'#fff',5);
+  T(smash,80,72,'#39ff14',6);
+  T('PASTED '+score,80,92,'#ffcc33',7);
+  T('BEST '+best,80,104,'#ffcc33',6);
+  if((t>>4)%2)T('TAP TO RETRY',80,118,'#fff',6);
+ }
+ g.restore();
+ requestAnimationFrame(loop);
+}
+document.fonts.load('8px "Press Start 2P"').finally(loop);
+</script>
+</body>
+</html>
